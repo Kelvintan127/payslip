@@ -55,12 +55,7 @@ npm install
 
 ### 3. Setup environment variables
 
-Create a `.env` file:
-
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
-PORT=3000
-```
+Run cp .env.example .env and fill in the environment variables.
 
 ### 4. Run database migration
 
