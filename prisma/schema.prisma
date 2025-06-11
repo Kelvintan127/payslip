@@ -1,0 +1,151 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id       Int  @id @default(autoincrement())
+  name     String
+  username String  @unique
+  password  String
+  salary   Float
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  deletedAt          DateTime?
+  createdBy          Int?
+  updatedBy          Int?
+  ipAddress          String?
+
+  attendances   Attendance[]
+  overtimes     Overtime[]
+  reimbursements Reimbursement[]
+  payslips      Payslip[]
+}
+
+model Admin {
+  id       Int  @id @default(autoincrement())
+  name     String
+  username String  @unique
+  password  String
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  deletedAt          DateTime?
+  createdBy          Int?
+  updatedBy          Int?
+  ipAddress          String?
+}
+
+model AttendancePeriod {
+  id           Int          @id @default(autoincrement())
+  startDate    DateTime
+  endDate      DateTime
+  isLocked     Boolean      @default(false)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    Int?
+  updatedBy    Int?
+  ipAddress    String?
+
+  payroll      Payroll?
+}
+
+
+model Attendance {
+  id             Int       @id @default(autoincrement())
+  employeeId     Int
+  attendanceDate DateTime
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      Int?
+  updatedBy      Int?
+  ipAddress      String?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, attendanceDate])
+}
+
+model Overtime {
+  id           Int       @id @default(autoincrement())
+  employeeId   Int
+  overtimeDate DateTime
+  hours        Float     
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    Int?
+  updatedBy    Int?
+  ipAddress    String?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Reimbursement {
+  id                Int       @id @default(autoincrement())
+  employeeId        Int
+  reimbursementDate DateTime
+  amount            Float
+  description       String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         Int?
+  updatedBy         Int?
+  ipAddress         String?
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Payroll {
+  id                   Int               @id @default(autoincrement())
+  attendancePeriodId   Int               @unique
+  runAt                DateTime
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  createdBy            Int?
+  updatedBy            Int?
+  ipAddress            String?
+
+  attendancePeriod AttendancePeriod @relation(fields: [attendancePeriodId], references: [id])
+  payslips          Payslip[]
+}
+
+model Payslip {
+  id                Int       @id @default(autoincrement())
+  payrollId         Int
+  employeeId        Int
+  attendanceDays    Int
+  baseSalary        Float
+  overtimePay       Float
+  reimbursementTotal Float
+  takeHomePay       Float
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         Int?
+  updatedBy         Int?
+  ipAddress         String?
+
+  payroll  Payroll  @relation(fields: [payrollId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  tableName   String
+  recordId    Int
+  action      String 
+  changes     Json
+  createdAt   DateTime @default(now())
+  createdBy   Int?
+  createdByName String?
+  ipAddress   String
+  requestId   String  
+}
